@@ -1,0 +1,147 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Studio Management API",
+        "description": "API documentation for class and booking system",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/bookings": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Book a class",
+                "operationId": "e33fa5a6507581f9b1e0d710a9a130d1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "member_name",
+                                    "date"
+                                ],
+                                "properties": {
+                                    "member_name": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-03-07"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Booking successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Booking successful"
+                                        },
+                                        "booking": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/classes": {
+            "post": {
+                "tags": [
+                    "Classes"
+                ],
+                "summary": "Create a new class",
+                "operationId": "9f95c6bbce965c91422660401663e65f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "start_date",
+                                    "end_date",
+                                    "capacity"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Yoga"
+                                    },
+                                    "start_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-03-07"
+                                    },
+                                    "end_date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-03-20"
+                                    },
+                                    "capacity": {
+                                        "type": "integer",
+                                        "example": 20
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Class created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Class created successfully"
+                                        },
+                                        "class": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Bookings",
+            "description": "API Endpoints for booking classes"
+        },
+        {
+            "name": "Classes",
+            "description": "API Endpoints for managing studio classes"
+        }
+    ]
+}
