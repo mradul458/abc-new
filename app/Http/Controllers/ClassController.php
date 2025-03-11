@@ -51,6 +51,19 @@ class ClassController extends Controller
     {   
 
         $data = $request->validated();
+        $existingClass = ClassModel::where('name', $data['name'])
+            ->where('start_date', $data['start_date'])
+            ->where('end_date', $data['end_date'])
+            ->first();
+
+        if ($existingClass) {
+            return response()->json([
+                'message' => 'A class with the same name and date range already exists.',
+                'errors' => [
+                    'name' => ['This class has already been scheduled for the selected dates.']
+                ]
+            ], 422);
+        }
         
         $class = ClassModel::create($data);
 

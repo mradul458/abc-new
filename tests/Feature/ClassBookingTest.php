@@ -5,18 +5,26 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\ClassModel;
+use App\Models\Booking;
+use Carbon\Carbon;
 
 class ClassBookingTest extends TestCase
 {
-    use RefreshDatabase; // Resets the database after each test
+    use RefreshDatabase;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->artisan('migrate'); 
+    }
 
     /** @test */
     public function it_should_create_a_class_successfully()
     {
         $response = $this->postJson('/api/classes', [
-            'name' => 'Yoga Class',
-            'start_date' => now()->toDateString(),
-            'end_date' => now()->addDays(5)->toDateString(),
+            'name' => 'Yoga New Class',
+            'start_date' => Carbon::tomorrow()->toDateString(),
+            'end_date' => Carbon::tomorrow()->addDays(5)->toDateString(),
             'capacity' => 20,
         ]);
 
@@ -24,10 +32,12 @@ class ClassBookingTest extends TestCase
                  ->assertJson([
                      'message' => 'Class created successfully',
                      'class' => [
-                         'name' => 'Yoga Class',
+                         'name' => 'Yoga New Class',
                          'capacity' => 20,
                      ],
                  ]);
+
+        $this->assertDatabaseHas('classes', ['name' => 'Yoga New Class']);
     }
 
     /** @test */
@@ -40,20 +50,47 @@ class ClassBookingTest extends TestCase
     }
 
     /** @test */
+    public function it_should_not_allow_duplicate_classes_on_same_date()
+    {
+        ClassModel::create([
+            'name' => 'Pilates Class',
+            'start_date' => Carbon::tomorrow()->toDateString(),
+            'end_date' => Carbon::tomorrow()->addDays(5)->toDateString(),
+            'capacity' => 15,
+        ]);
+
+        $response = $this->postJson('/api/classes', [
+            'name' => 'Pilates Class',
+            'start_date' => Carbon::tomorrow()->toDateString(),
+            'end_date' => Carbon::tomorrow()->addDays(5)->toDateString(),
+            'capacity' => 15,
+        ]);
+
+        $response->assertStatus(422)
+         ->assertJson([
+             'message' => 'A class with the same name and date range already exists.',
+             'errors' => [
+                 'name' => ['This class has already been scheduled for the selected dates.']
+             ]
+         ]);
+
+    }
+
+    /** @test */
     public function it_should_book_a_class_successfully()
     {
         // Create a class first
         $class = ClassModel::create([
             'name' => 'Pilates Class',
-            'start_date' => now()->toDateString(),
-            'end_date' => now()->addDays(5)->toDateString(),
+            'start_date' => Carbon::tomorrow()->toDateString(),
+            'end_date' => Carbon::tomorrow()->addDays(5)->toDateString(),
             'capacity' => 15,
         ]);
 
         // Book a class
         $response = $this->postJson('/api/bookings', [
             'member_name' => 'John Doe',
-            'date' => now()->toDateString(),
+            'date' => Carbon::tomorrow()->toDateString(),
         ]);
 
         $response->assertStatus(201)
@@ -61,9 +98,11 @@ class ClassBookingTest extends TestCase
                      'message' => 'Booking successful',
                      'booking' => [
                          'member_name' => 'John Doe',
-                         'date' => now()->toDateString(),
+                         'date' => Carbon::tomorrow()->toDateString(),
                      ],
                  ]);
+
+        $this->assertDatabaseHas('bookings', ['member_name' => 'John Doe']);
     }
 
     /** @test */
@@ -74,4 +113,5 @@ class ClassBookingTest extends TestCase
         $response->assertStatus(422)
                  ->assertJsonValidationErrors(['member_name', 'date']);
     }
+
 }
